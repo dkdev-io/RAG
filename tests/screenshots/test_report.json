@@ -1,0 +1,23 @@
+{
+  "timestamp": "2025-09-21T00:53:59.047Z",
+  "testResults": {
+    "mainInterface": true,
+    "selectFolderTab": true,
+    "manageFilesTab": true,
+    "systemStatusTab": true,
+    "queryTabReturn": true,
+    "folderSelectionElements": {
+      "currentFolder": false,
+      "manualInput": true,
+      "setButton": false,
+      "recentFolders": false
+    }
+  },
+  "screenshots": [
+    "01_main_interface.png",
+    "02_select_folder_tab.png",
+    "03_manage_files_tab.png",
+    "04_system_status_tab.png",
+    "05_query_with_folder_indicator.png"
+  ]
+}
