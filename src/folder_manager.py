@@ -155,53 +155,45 @@ def render_folder_selector() -> Optional[str]:
     # Show current folder
     st.info(f"Current folder: {current_folder}")
 
-    # Folder selection options
-    col1, col2 = st.columns([2, 1])
+    # Simple folder browser interface
+    if 'current_browse_path' not in st.session_state:
+        st.session_state.current_browse_path = str(Path.home())
 
+    # Navigation
+    current_path = Path(st.session_state.current_browse_path)
+
+    # Up button
+    col1, col2 = st.columns([1, 4])
     with col1:
-        # Manual path input
-        new_folder = st.text_input(
-            "Enter folder path:",
-            value="",
-            placeholder="e.g., /Users/username/Documents/MyFiles"
-        )
-
-        if st.button("Set Folder") and new_folder:
-            if folder_manager.set_source_directory(new_folder):
-                folder_manager.add_to_recent_folders(new_folder)
-                st.success(f"✅ Folder set to: {new_folder}")
-                st.rerun()
-            else:
-                st.error("❌ Invalid folder path or folder doesn't exist")
+        if st.button("⬆️ Up") and current_path.parent != current_path:
+            st.session_state.current_browse_path = str(current_path.parent)
+            st.rerun()
 
     with col2:
-        # Quick folder browser
-        if st.button("Browse..."):
-            st.info("💡 Tip: Copy and paste the full path of your folder")
+        st.text(f"📂 {current_path}")
 
-    # Recent and suggested folders
-    recent_folders = folder_manager.get_recent_folders()
-    suggested_folders = folder_manager.get_suggested_folders()
+    # List directories
+    try:
+        directories = [d for d in current_path.iterdir() if d.is_dir() and not d.name.startswith('.')]
+        directories.sort(key=lambda x: x.name.lower())
 
-    if recent_folders or suggested_folders:
-        st.markdown("**Quick Select:**")
-
-        # Combine recent and suggested (recent first)
-        all_folders = []
-        if recent_folders:
-            all_folders.extend([(f, "📋 Recent") for f in recent_folders])
-        if suggested_folders:
-            for f in suggested_folders:
-                if f not in recent_folders:
-                    all_folders.append((f, "💡 Suggested"))
-
-        # Display as buttons
-        for folder_path, label_type in all_folders[:8]:  # Show max 8
-            folder_name = Path(folder_path).name
-            if st.button(f"{label_type}: {folder_name}", key=f"folder_{abs(hash(folder_path))}"):
-                if folder_manager.set_source_directory(folder_path):
-                    folder_manager.add_to_recent_folders(folder_path)
-                    st.success(f"✅ Folder set to: {folder_path}")
+        # Display directories as buttons
+        for directory in directories[:20]:  # Limit to 20 for performance
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                if st.button(f"📁 {directory.name}", key=f"dir_{hash(str(directory))}"):
+                    st.session_state.current_browse_path = str(directory)
                     st.rerun()
+            with col2:
+                if st.button("Select", key=f"sel_{hash(str(directory))}"):
+                    if folder_manager.set_source_directory(str(directory)):
+                        folder_manager.add_to_recent_folders(str(directory))
+                        st.success(f"✅ Selected: {directory}")
+                        st.rerun()
+
+    except PermissionError:
+        st.error("Permission denied to access this directory")
+    except Exception as e:
+        st.error(f"Error reading directory: {e}")
 
     return str(folder_manager.get_source_directory())

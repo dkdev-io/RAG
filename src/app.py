@@ -5,6 +5,7 @@ Streamlit Web Interface for Personal RAG Assistant
 
 import json
 import logging
+import os
 import subprocess
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -389,18 +390,6 @@ def show_file_management(folder_manager: FolderManager):
                 except Exception as e:
                     st.error(f"Error clearing database: {e}")
 
-    # Instructions
-    st.markdown("---")
-    st.markdown("### Instructions")
-    st.markdown("""
-    1. **Select folder** in the 'Select Folder' tab: `{}`
-    2. **Run Assessment** to analyze file compatibility
-    3. **Process Files** to extract content and build searchable database
-    4. **Query Documents** in the main tab to search your files
-
-    **Supported file types:** Text, PDF, Word docs, Excel, images (with OCR), and more.
-    **New:** Incompatible files are automatically converted when possible!
-    """.format(source_dir))
 
 
 def show_query_interface(folder_manager: FolderManager):
@@ -424,11 +413,13 @@ def show_query_interface(folder_manager: FolderManager):
         st.info("Please run assessment and processing first in the 'Manage Files' tab")
         return
 
-    # Query input
+    # Query input - increased height for better typing experience
+    st.markdown("### Ask a Question")
     query = st.text_area(
         "Enter your question:",
-        height=100,
-        placeholder="e.g., What are the main topics covered in my notes about machine learning?"
+        height=150,
+        placeholder="e.g., What are the main topics covered in my notes about machine learning?",
+        help="Type your question here and click Search to find relevant information from your documents."
     )
 
     if st.button("Search", type="primary"):
